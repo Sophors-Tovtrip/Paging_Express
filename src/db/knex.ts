@@ -1,4 +1,3 @@
-// filepath: /Users/apple/Desktop/express-server-pagination/src/db/knex.ts
 import knex from 'knex';
 import { config } from 'dotenv';
 import path from 'path';

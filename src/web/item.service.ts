@@ -1,43 +1,53 @@
-// src/services/item.service.ts
 import knex from "../db/knex";
-import { Item, ItemSchema } from "./type";
+import { Item, ItemCreateSchema } from "./type";
+import { v4 as uuidv4 } from "uuid";
 
 export class ItemService {
+  
   async createItem(data: unknown): Promise<Item> {
-    const parsedData = ItemSchema.parse(data); 
-    const [item] = await knex("items").insert(parsedData).returning("*");
+    const parsedData = ItemCreateSchema.parse(data); 
+    const uniqueId = `ITEM-${uuidv4().toUpperCase().replace(/-/g, '').slice(0, 8)}`;
+    const itemData = { ...parsedData, uniqueId };
+
+    const [item] = await knex("items").insert(itemData).returning("*");
 
     console.log(item);
     return item;
   }
 
- async getItems(
+  async getItems(
     page: number = 1,
     limit: number = 10,
-    filter: Partial<Item> = {}
+    filters: Record<string, any> = {}
   ): Promise<{ data: Item[]; total: number }> {
-    const defaultPageSize = 10;
-    const baseOffset = (page - 1) * defaultPageSize;
-    const offset = baseOffset;
-
-    const baseQuery = knex('items').where((builder) => {
-      Object.entries(filter).forEach(([key, value]) => {
-        if (value) {
-          builder.where(key, 'like', `%${value}%`);
+    // Base query to fetch items, applying the filters
+    const baseQuery = knex("items").where((builder) => {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (typeof value === "string") {
+          builder.where(key, "like", `%${value}%`);
+        } else if (!isNaN(Number(value))) {
+          builder.where(key, "=", Number(value));
         }
       });
     });
 
-    const totalQuery = baseQuery.clone().count('* as count').first();
+    // Get the total number of items after filtering
+    const totalQuery = baseQuery.clone().count("* as count").first();
     const total = Number((await totalQuery)?.count) || 0;
 
-    const data = await baseQuery.clone()
-      .orderBy('id', 'asc')
+    // Calculate pagination (offset) based on the page and limit
+    const offset = (page - 1) * limit;
+
+    // Fetch the paginated data after applying filters
+    const data = await baseQuery
       .offset(offset)
       .limit(limit)
-      .select('*');
+      .select("*");
 
     return { data, total };
   }
+
+
+
 
 }

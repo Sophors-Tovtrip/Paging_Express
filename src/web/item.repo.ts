@@ -1,5 +1,11 @@
-// src/repositories/item.repo.ts
-import { Item } from "./type";
+import { Item, ItemCreateSchema } from "./type";
+import { z } from "zod";
+
+export interface ItemRepoCreateParam {
+  data: z.infer<typeof ItemCreateSchema> & {
+    uniqueId: string;
+  };
+}
 
 export class ItemRepo {
   private items: Item[] = [];

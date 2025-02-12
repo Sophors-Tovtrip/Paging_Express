@@ -1,4 +1,3 @@
-// src/controllers/item.controller.ts
 import { Request, Response } from "express";
 import { ItemService } from "./item.service";
 
@@ -10,6 +9,8 @@ export class ItemController {
       const item = await itemService.createItem(req.body);
       res.status(201).json(item);
     } catch (error) {
+      console.log(error);
+
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
       } else {
@@ -18,18 +19,33 @@ export class ItemController {
     }
   }
 
-  public async getItems(req: Request, res: Response) {
-    try {
-      const page = Math.max(parseInt(req.query.page as string) || 1, 1); // Ensure page is at least 1
-      const limit = Math.max(parseInt(req.query.limit as string) || 10, 1); // Ensure limit is positive
-      const filter = req.query.filter ? JSON.parse(req.query.filter as string) : {};
+ public async getItems(req: Request, res: Response) {
+  try {
+    // Extract page, limit-items, and filter from query params
+    const page = Math.max(parseInt(req.query.page as string) || 1, 1);
+    const limit = Math.max(parseInt(req.query.limit as string) || 10, 1);
+    const filters: Record<string, any> = { ...req.query };
 
-      const { data, total } = await itemService.getItems(page, limit, filter);
-      res.json({ data, total, page, limit });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "An error occurred while fetching items" });
+    // delete filters.page;
+    // delete filters.limit;
+
+    // Convert numeric filters to actual numbers (ex: price)
+    for (const key in filters) {
+      if (!isNaN(Number(filters[key]))) {
+        filters[key] = Number(filters[key]);
+      }
     }
+
+    // Fetch filtered data and total count
+    const { data, total } = await itemService.getItems(page, limit, filters);
+    res.json({ data, total, page, limit });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "An error occurred while fetching items" });
   }
+}
+
+
+
 
 }
