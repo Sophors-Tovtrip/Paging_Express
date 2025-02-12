@@ -1,0 +1,42 @@
+{
+  "name": "express-server-pagination",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "dev": "ts-node src/app.ts",
+    "swagger": "ts-node ./src/swagger.ts",
+    "build": "tsc",
+    "start": "NODE_ENV=production pnpm prod:migrate:latest && node build/app.js",
+    "migrate:make": "knex --knexfile ./src/db/knexfile.ts migrate:make",
+    "migrate:latest": "knex --knexfile ./src/db/knexfile.ts migrate:latest",
+    "migrate:rollback": "knex --knexfile ./src/db/knexfile.ts migrate:rollback",
+    "prod:migrate:latest": "knex --knexfile ./build/db/knexfile.js migrate:latest",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "postinstall": "npx husky install",
+    "format": "prettier --write \"**/*.ts\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.3.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "knex": "^3.1.0",
+    "pg": "^8.13.1",
+    "uuid": "^11.0.5",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/knex": "^0.16.1",
+    "@types/node": "^22.13.1",
+    "prisma": "^6.3.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}
